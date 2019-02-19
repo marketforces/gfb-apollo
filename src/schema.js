@@ -59,12 +59,13 @@ const typeDefs = gql`
   ${User}
   type Query {
     account(id: ID!): Account
-    adaccounts(access_token: String!): AdAccountsResponse
-    adcreatives(id: ID!, limit: Int, after: String): AdCreativesResponse
+    adaccounts: AdAccountsResponse
+    adcreatives(limit: Int, after: String): AdCreativesResponse
     me: User
   }
   type Mutation {
-    login(adAccountId: String): String # login token
+    authToken(adAccountId: String): String # login token
+    appId: String
   }
 `
 module.exports = typeDefs

@@ -26,12 +26,20 @@ const server = new ApolloServer({
     const adAccountId = !!parsedAuthToken[0] && parsedAuthToken[0]
     apiKey = !!parsedAuthToken[1] ? parsedAuthToken[1] : apiKey
 
+    if (!apiKey && !adAccountId) {
+      throw new Error("Bad Request: Missing Authorization")
+    }
+
     // If no ad account ID, return null for user
     if (!adAccountId) return { user: null, apiKey, authToken }
 
-    // Find a user by their ad account id, or create one
-    const users = await store.users.findOrCreate({ where: { adAccountId } })
-    const user = users && users[0] ? users[0] : null
+    // Find a user by their ad account id
+    const user = await store.users.findOne({ where: { adAccountId } })
+
+    if (!user) {
+      console.log({ adAccountId, parsedAuthToken })
+      throw new Error("Bad Request: No user found.")
+    }
 
     // Set up context
     return {
@@ -50,5 +58,5 @@ const server = new ApolloServer({
 })
 
 server.listen().then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`)
+  console.log(`🚀 Server live at ${url}`)
 })

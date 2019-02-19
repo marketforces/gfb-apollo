@@ -2,8 +2,14 @@ const { RESTDataSource } = require("apollo-datasource-rest")
 const qs = require("qs")
 const isAuthenticated = require("../auth")
 
-const verifyAuth = ({ apiKey, authToken, adAccountId }, level) => {
+const verifyAuth = ({ user, apiKey, authToken, adAccountId }, level) => {
   let result, code
+
+  const fbAccessToken = user.accessToken
+  if (!fbAccessToken) {
+    console.log("User", user)
+    throw new Error("Facebook access token not provided with request.")
+  }
 
   const isAuthed = isAuthenticated(apiKey) ? apiKey : false
 
@@ -43,30 +49,15 @@ class FacebookAPI extends RESTDataSource {
   constructor() {
     super()
     this.baseURL = "https://graph.facebook.com/v3.2/"
-    this.accessTokenParam = qs.stringify({
-      access_token: process.env.ACCESS_TOKEN
-    })
   }
 
-  async getAccountById({ accountId }) {
-    const { accessTokenParam } = this
-    const response = await this.get(`act_${accountId}?${accessTokenParam}`)
-    return this.accountReducer(response)
-  }
-
-  accountReducer({ id, account_id }) {
-    return {
-      id,
-      account_id
-    }
-  }
-
-  async getAdAccounts({ access_token }) {
+  async getAdAccounts() {
     verifyAuth(this.context, 2)
+    const { user } = this.context
 
     const edge = "me"
     const query = qs.stringify({
-      access_token,
+      access_token: user.accessToken,
       fields: "adaccounts{account_id}"
     })
 
@@ -93,21 +84,28 @@ class FacebookAPI extends RESTDataSource {
     }
   }
 
-  async getAdCreatives({ id, limit, after }) {
+  async getAdCreatives({ limit, after }) {
+    verifyAuth(this.context, 2)
+
+    const { adAccountId, user } = this.context
+    const { accessToken } = user
+
     const edge = "adcreatives"
     const query = qs.stringify({
-      access_token: process.env.ACCESS_TOKEN,
+      access_token: accessToken,
       fields: "object_story_id,object_type,body,image_url,title",
       limit,
       after
     })
-    const response = await this.get(`act_${id}/${edge}?${query}`)
-    // console.log("Res", response)
+
+    const response = await this.get(`act_${adAccountId}/${edge}?${query}`)
+
     const results = Array.isArray(response.data)
       ? Promise.all(
           response.data.map(creative => this.adCreativesReducer(creative))
         )
       : []
+
     return {
       results,
       hasMore: !!response.paging.cursors.after,
@@ -126,9 +124,12 @@ class FacebookAPI extends RESTDataSource {
   }
 
   async getPhotoObjectImageById({ object_story_id }) {
+    const { adAccountId, user } = this.context
+    const { accessToken } = user
+
     const edge = object_story_id
     const query = qs.stringify({
-      access_token: process.env.ACCESS_TOKEN,
+      access_token: accessToken,
       fields: "full_picture"
     })
     const response = await this.get(`/${edge}?${query}`)

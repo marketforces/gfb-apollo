@@ -41,9 +41,12 @@ const createStore = () => {
       )
 
       sequelize.sync({ force: true }).then(() => {
-        users.create({
-          apiKey: Date.now()
-        })
+        // users.create({
+        //   apiKey: Date.now(),
+        //   adAccountId: "ADAccount123",
+        //   accessToken:
+        //     "EAAn4L3S8ykMBAANKKiEJkQ6xLU9qbXPslsX8ahwCDZAZBvBPJt9l00NVubbPIbMSz33MFNc42padqyBuD4XZASOBZC6rR83HLC1OwiGMfStnivyFeqUvD7iA4HwoLBPM8ZBUGXzsy6O4LQWxtZCFlCnr7GvBDQHXcWEwqSzrrXbiMStSK8YDRESLZC0e4yL0OV4rZAQ5EE3tBAZDZD"
+        // })
       })
     })
     .catch(err => {
@@ -52,7 +55,5 @@ const createStore = () => {
 
   return { users }
 }
-
-// createStore()
 
 module.exports = createStore
