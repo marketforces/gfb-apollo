@@ -7,6 +7,19 @@ const Account = gql`
   }
 `
 
+const AdAccount = gql`
+  type AdAccount {
+    id: ID!
+  }
+`
+
+const AdAccountsResponse = gql`
+  ${AdAccount}
+  type AdAccountsResponse {
+    results: [AdAccount]!
+  }
+`
+
 const AdCreatives = gql`
   type AdCreatives {
     id: ID!
@@ -42,11 +55,16 @@ const User = gql`
 const typeDefs = gql`
   ${Account}
   ${AdCreativesResponse}
+  ${AdAccountsResponse}
   ${User}
   type Query {
     account(id: ID!): Account
+    adaccounts(access_token: String!): AdAccountsResponse
     adcreatives(id: ID!, limit: Int, after: String): AdCreativesResponse
     me: User
+  }
+  type Mutation {
+    login(adAccountId: String): String # login token
   }
 `
 module.exports = typeDefs

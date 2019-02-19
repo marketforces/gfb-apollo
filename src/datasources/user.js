@@ -4,7 +4,6 @@ class UserAPI extends DataSource {
   constructor({ store }) {
     super()
     this.store = store
-    console.log("STORE", store)
   }
 
   /**
@@ -22,20 +21,24 @@ class UserAPI extends DataSource {
    * have to be. If the user is already on the context, it will use that user
    * instead
    */
-  async findOrCreateUser({ fbAccountId: fbAccountIdArg } = {}) {
-    const fbAccountId =
+  async findOrCreateUser({ adAccountId: adAccountIdArg } = {}) {
+    const adAccountId =
       this.context && this.context.user
-        ? this.context.user.fbAccountId
-        : fbAccountIdArg
-    if (!fbAccountId) return null
+        ? this.context.user.adAccountId
+        : adAccountIdArg
+    if (!adAccountId) return null
 
     const users = await this.store.users.findOrCreate({
-      where: { fbAccountId }
+      where: { adAccountId }
     })
-    return users && users[0] ? users[0] : null
+    const user = users && users[0] ? users[0] : null
+    return {
+      user,
+      apiKey: this.context.apiKey
+    }
   }
 
-  async findUserByFbAccountId({ fbAccountId: fbAccountIdArg } = {}) {
+  async findUserByFbAccountId({ adAccountId: adAccountIdArg } = {}) {
     const user = await this.store.users.findOne()
     console.log("API KEY", user.get("apiKey"))
     return user

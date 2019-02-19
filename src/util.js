@@ -46,7 +46,7 @@ const createStore = () => {
         })
       })
     })
-    .catch(e => {
+    .catch(err => {
       console.error("Unable to connect to the database:", err)
     })
 

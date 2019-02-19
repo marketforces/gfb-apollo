@@ -1,5 +1,43 @@
 const { RESTDataSource } = require("apollo-datasource-rest")
 const qs = require("qs")
+const isAuthenticated = require("../auth")
+
+const verifyAuth = ({ apiKey, authToken, adAccountId }, level) => {
+  let result, code
+
+  const isAuthed = isAuthenticated(apiKey) ? apiKey : false
+
+  switch (level) {
+    case 1:
+      result = !!isAuthenticated
+      code = "0001"
+      break
+    case 2:
+      const level2Check = () => {
+        const test = Buffer.from(`${adAccountId},${apiKey}`).toString("base64")
+        return test === authToken
+      }
+      result = level2Check()
+      code = "0002"
+      break
+  }
+
+  console.log(
+    "\nRoute Authentication\n",
+    {
+      result,
+      apiKey,
+      test: Buffer.from(`${adAccountId},${apiKey}`).toString("base64"),
+      authToken,
+      adAccountId,
+      level
+    },
+    "\n"
+  )
+  if (result === false) {
+    throw new Error("Authentication Failure Code: " + code)
+  }
+}
 
 class FacebookAPI extends RESTDataSource {
   constructor() {
@@ -23,6 +61,38 @@ class FacebookAPI extends RESTDataSource {
     }
   }
 
+  async getAdAccounts({ access_token }) {
+    verifyAuth(this.context, 2)
+
+    const edge = "me"
+    const query = qs.stringify({
+      access_token,
+      fields: "adaccounts{account_id}"
+    })
+
+    const response = await this.get(`${edge}?${query}`)
+
+    const results = Array.isArray(response.adaccounts.data)
+      ? Promise.all(
+          response.adaccounts.data.map(account =>
+            this.adAccountsReducer(account)
+          )
+        )
+      : []
+
+    console.log("Retrieved ad accounts\n", await results, "\n")
+
+    return {
+      results
+    }
+  }
+
+  async adAccountsReducer({ id, account_id }) {
+    return {
+      id: account_id
+    }
+  }
+
   async getAdCreatives({ id, limit, after }) {
     const edge = "adcreatives"
     const query = qs.stringify({
@@ -31,7 +101,6 @@ class FacebookAPI extends RESTDataSource {
       limit,
       after
     })
-    console.log("Req", { id, limit, edge, query })
     const response = await this.get(`act_${id}/${edge}?${query}`)
     // console.log("Res", response)
     const results = Array.isArray(response.data)
