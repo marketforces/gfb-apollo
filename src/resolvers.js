@@ -16,8 +16,10 @@ module.exports = {
       const user = await dataSources.userAPI.findOrCreateUser({
         apiKey,
         adAccountId,
+        buildQueue: 1,
+        //Temporary token for testing, will be replaced with client data
         accessToken:
-          "EAAn4L3S8ykMBANxXuPQOw5TNJzYVUV7SpZCLIYxZCINaSfu5WyFLSFV3jMMrpRqk5IFOYxvwANgnWsn4X67TPHYPGwfnRZB6yXcKkGGlfFTcdppcW2TSlAW3VM44oUu5ouGB8YzlFD6nD6sV1ZAgBhirZBIySUAQ7q8xt8WNQPYv3SMldhFqiv1ZAehLPd1KhrITDAhook1jC9rdsOgBF3Q6kZA2iUQHJiPQzSH2XtyxwZDZD"
+          "EAAn4L3S8ykMBAPfCKO9B960BVc0uUKUxTxfDhugEKWZBtNxUf5TQ0f9CHphyA2q0WP9P2RkaEQjWlDpMwck9CbpKzQPcZBphZARH73lpBabxnC0ok6gGXcr7ZCmLFSPC1SY9aUNVFZBL9XJatA2WL8ODOpMjdnVI9WLa0Eymm10TIYyd1X0ZCJShB5NGjuGs9vLOvLVblfcVVvnld8PqJwYGhWsSy9VgV2GawnBhNPBAZDZD"
       })
 
       if (user)

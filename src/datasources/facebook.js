@@ -106,10 +106,13 @@ class FacebookAPI extends RESTDataSource {
         )
       : []
 
+    const hasMore =
+      response.paging && !!response.paging.cursors.after ? true : false
+
     return {
       results,
-      hasMore: !!response.paging.cursors.after,
-      after: response.paging.cursors.after
+      hasMore,
+      after: response.paging && response.paging.cursors.after
     }
   }
 

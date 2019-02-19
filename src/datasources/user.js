@@ -18,7 +18,8 @@ class UserAPI extends DataSource {
   async findOrCreateUser({
     adAccountId: adAccountIdArg,
     apiKey,
-    accessToken
+    accessToken,
+    buildQueue
   } = {}) {
     const adAccountId =
       this.context && this.context.user
@@ -27,7 +28,7 @@ class UserAPI extends DataSource {
     if (!adAccountId) return null
 
     const users = await this.store.users.findOrCreate({
-      where: { adAccountId, apiKey, accessToken }
+      where: { adAccountId, apiKey, accessToken, buildQueue }
     })
     const user = users && users[0] ? users[0] : null
 
