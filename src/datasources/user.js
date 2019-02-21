@@ -1,5 +1,7 @@
 const { DataSource } = require("apollo-datasource")
 
+const verifyAuth = require("../auth")
+
 class UserAPI extends DataSource {
   constructor({ store }) {
     super()
@@ -15,9 +17,15 @@ class UserAPI extends DataSource {
     return apiKey
   }
 
+  async userExists({ fbAccountId }) {
+    const user = await this.store.users.findOne({ fbAccountId })
+    return user
+  }
+
   async findOrCreateUser({
     adAccountId: adAccountIdArg,
     apiKey,
+    fbAccountId,
     accessToken,
     buildQueue
   } = {}) {
@@ -25,10 +33,10 @@ class UserAPI extends DataSource {
       this.context && this.context.user
         ? this.context.user.adAccountId
         : adAccountIdArg
-    if (!adAccountId) return null
+    if (!adAccountId && !accessToken) return null
 
     const users = await this.store.users.findOrCreate({
-      where: { adAccountId, apiKey, accessToken, buildQueue }
+      where: { adAccountId, apiKey, fbAccountId, accessToken, buildQueue }
     })
     const user = users && users[0] ? users[0] : null
 
@@ -49,6 +57,23 @@ class UserAPI extends DataSource {
 
   async findUserByFbAccountId({ adAccountId: adAccountIdArg } = {}) {
     const user = await this.store.users.findOne()
+    return user
+  }
+
+  async update({ adAccountId, apiKey, accessToken, buildQueue } = {}) {
+    verifyAuth(this.context, 2)
+
+    const { user, userModel } = this.context
+
+    if (!userModel) return null
+
+    userModel.update({
+      adAccountId,
+      apiKey,
+      accessToken,
+      buildQueue
+    })
+
     return user
   }
 }

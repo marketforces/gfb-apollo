@@ -1,54 +1,30 @@
 const { RESTDataSource } = require("apollo-datasource-rest")
 const qs = require("qs")
-const isAuthenticated = require("../auth")
-
-const verifyAuth = ({ user, apiKey, authToken, adAccountId }, level) => {
-  let result, code
-
-  const fbAccessToken = user.accessToken
-  if (!fbAccessToken) {
-    console.log("User", user)
-    throw new Error("Facebook access token not provided with request.")
-  }
-
-  const isAuthed = isAuthenticated(apiKey) ? apiKey : false
-
-  switch (level) {
-    case 1:
-      result = !!isAuthenticated
-      code = "0001"
-      break
-    case 2:
-      const level2Check = () => {
-        const test = Buffer.from(`${adAccountId},${apiKey}`).toString("base64")
-        return test === authToken
-      }
-      result = level2Check()
-      code = "0002"
-      break
-  }
-
-  console.log(
-    "\nRoute Authentication\n",
-    {
-      result,
-      apiKey,
-      test: Buffer.from(`${adAccountId},${apiKey}`).toString("base64"),
-      authToken,
-      adAccountId,
-      level
-    },
-    "\n"
-  )
-  if (result === false) {
-    throw new Error("Authentication Failure Code: " + code)
-  }
-}
+const verifyAuth = require("../auth")
 
 class FacebookAPI extends RESTDataSource {
   constructor() {
     super()
     this.baseURL = "https://graph.facebook.com/v3.2/"
+  }
+
+  async getAccountId({ accessToken }) {
+    const { user } = this.context
+
+    const edge = "me"
+    const query = qs.stringify({
+      access_token: accessToken ? accessToken : user.accessToken,
+      fields: ""
+    })
+
+    const response = await this.get(`${edge}?${query}`)
+
+    if (!response.id)
+      throw new Error(
+        "Facebook account ID request failure with token " + accessToken
+      )
+
+    return response
   }
 
   async getAdAccounts() {
@@ -87,8 +63,8 @@ class FacebookAPI extends RESTDataSource {
   async getAdCreatives({ limit, after }) {
     verifyAuth(this.context, 2)
 
-    const { adAccountId, user } = this.context
-    const { accessToken } = user
+    const { user } = this.context
+    const { accessToken, adAccountId } = user
 
     const edge = "adcreatives"
     const query = qs.stringify({

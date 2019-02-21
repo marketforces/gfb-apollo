@@ -28,7 +28,7 @@ const createStore = () => {
     accessToken: Sequelize.STRING,
     apiKey: Sequelize.STRING,
     adAccountId: Sequelize.STRING,
-    fbUserId: Sequelize.STRING,
+    fbAccountId: Sequelize.STRING,
     buildQueue: Sequelize.INTEGER
   })
 

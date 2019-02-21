@@ -12,14 +12,15 @@ const store = createStore()
 const server = new ApolloServer({
   context: async ({ req }) => {
     let authToken,
-      adAccountId,
+      fbAccountId,
+      apiKey,
       user = null
 
     // Extract API Key from request URI
-    let apiKey = req.originalUrl.substring(1)
+    let requestKey = req.originalUrl.substring(1)
 
     // If this is a build request, set user from buildQueue
-    if (apiKey === "build") {
+    if (requestKey === "build") {
       // Find a user by buildQueue
       user = await store.users.findOne({ where: { buildQueue: 1 } })
 
@@ -27,9 +28,9 @@ const server = new ApolloServer({
         throw new Error("Bad Request: Build request failed - no user queued.")
       }
 
-      adAccountId = user.adAccountId
+      fbAccountId = user.fbAccountId
       apiKey = user.apiKey
-      authToken = Buffer.from(`${adAccountId},${apiKey}`).toString("base64")
+      authToken = Buffer.from(`${fbAccountId},${apiKey}`).toString("base64")
 
       // Otherwise handle data normally
     } else {
@@ -41,39 +42,44 @@ const server = new ApolloServer({
         .toString("ascii")
         .split(",")
 
-      // Set Account ID and API Key where available
-      adAccountId = !!parsedAuthToken[0] && parsedAuthToken[0]
-      apiKey = !!parsedAuthToken[1] ? parsedAuthToken[1] : apiKey
+      console.log("\nParsed Auth Token: ", parsedAuthToken)
 
-      if (!apiKey && !adAccountId) {
+      // Set Account ID and API Key where available
+      fbAccountId = !!parsedAuthToken[0] && parsedAuthToken[0]
+      apiKey = !!parsedAuthToken[1] ? parsedAuthToken[1] : requestKey
+
+      if (!apiKey && !fbAccountId) {
         throw new Error("Bad Request: Missing Authorization")
       }
 
-      // If no ad account ID, return null for user
-      if (!adAccountId) return { user: null, apiKey, authToken }
+      // // If no ad account ID, return null for user
+      if (!fbAccountId) return { user: null, apiKey, requestKey, authToken }
 
       // Find a user by their ad account id
-      user = await store.users.findOne({ where: { adAccountId } })
+      user = await store.users.findOne({ where: { fbAccountId } })
+      apiKey = user.apiKey ? user.apiKey : apiKey
 
       if (!user) {
-        console.log({ adAccountId, parsedAuthToken })
         throw new Error("Bad Request: No user found.")
       }
     }
 
-    console.log({
+    console.log("\nRequest Details", {
       user: user.dataValues,
+      requestKey,
       apiKey,
       authToken,
-      adAccountId
+      fbAccountId
     })
 
     // Set up context
     return {
       user: { ...user.dataValues },
+      userModel: user,
       apiKey,
+      requestKey,
       authToken,
-      adAccountId
+      fbAccountId
     }
   },
   typeDefs,
