@@ -18,7 +18,7 @@ class UserAPI extends DataSource {
   }
 
   async userExists({ fbAccountId }) {
-    const user = await this.store.users.findOne({ fbAccountId })
+    const user = await this.store.users.findOne({ where: { fbAccountId } })
     return user
   }
 

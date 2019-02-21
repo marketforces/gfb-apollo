@@ -26,17 +26,15 @@ module.exports = {
         parsedLoginToken = JSON.parse(parsedLoginToken)
         console.log("Logging in with generated login token")
         apiKey = parsedLoginToken.apiKey ? parsedLoginToken.apiKey : apiKey
-        adAccountId = parsedLoginToken.adAccountId
+        fbAccountId = parsedLoginToken.fbAccountId
         accessToken = parsedLoginToken.accessToken
 
         console.log("\nParsed Login Token:", parsedLoginToken, "\n")
 
-        user = await dataSources.userAPI.findOrCreateUser({
-          apiKey,
-          adAccountId,
-          buildQueue,
-          accessToken
+        user = await dataSources.userAPI.userExists({
+          fbAccountId
         })
+        apiKey = user.apiKey ? user.apiKey : apiKey
       } catch (e) {
         accessToken = loginToken
         console.log("Logging in with FB access token:", accessToken)
@@ -65,6 +63,7 @@ module.exports = {
       const { apiKey, adAccountId, accessToken } = user
       const tokenData = JSON.stringify({
         apiKey,
+        fbAccountId,
         adAccountId,
         accessToken
       })
@@ -86,7 +85,10 @@ module.exports = {
 
       const { fbAccountId } = user
 
-      return Buffer.from(`${fbAccountId},${apiKey}`).toString("base64")
+      return {
+        success: !!user.id,
+        authToken: Buffer.from(`${fbAccountId},${apiKey}`).toString("base64")
+      }
     }
   }
 }

@@ -58,6 +58,13 @@ const IsUser = gql`
   }
 `
 
+const UdateUserResponse = gql`
+  type UdateUserResponse {
+    success: Boolean
+    authToken: String
+  }
+`
+
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
   ${Account}
@@ -65,6 +72,7 @@ const typeDefs = gql`
   ${AdAccountsResponse}
   ${User}
   ${IsUser}
+  ${UdateUserResponse}
   type Query {
     fbaccountid(loginToken: String): Account
     adaccounts: AdAccountsResponse
@@ -80,7 +88,7 @@ const typeDefs = gql`
       apiKey: String
       accessToken: String
       buildQueue: Int
-    ): String # login token
+    ): UdateUserResponse
   }
 `
 
