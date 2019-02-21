@@ -60,7 +60,7 @@ class UserAPI extends DataSource {
     return user
   }
 
-  async update({ adAccountId, apiKey, accessToken, buildQueue } = {}) {
+  async update({ adAccountId, apiKey, buildQueue, accessToken } = {}) {
     verifyAuth(this.context, 2)
 
     const { user, userModel } = this.context

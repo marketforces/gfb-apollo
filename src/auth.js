@@ -10,6 +10,10 @@ const verifyAuth = (
 ) => {
   let result, code
 
+  if (!user) {
+    throw new Error("Bad Request: No user found.")
+  }
+
   const fbAccessToken = user.accessToken
   if (!fbAccessToken) {
     console.log("User", user)
