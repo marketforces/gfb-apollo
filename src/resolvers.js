@@ -58,22 +58,12 @@ module.exports = {
       return process.env.APP_ID
     },
     isUser: async (_, { fbAccountId }, { dataSources }) => {
-      const user = (await dataSources.userAPI.userExists({ fbAccountId })) || {}
-      const isReady = !!user && !!user.apiKey && !!user.adAccountId
-      const { apiKey, adAccountId, accessToken } = user
-      const tokenData = JSON.stringify({
-        apiKey,
-        fbAccountId,
-        adAccountId,
-        accessToken
-      })
-      const token = Buffer.from(tokenData).toString("base64")
-      return { exists: !!user.id, isReady, token }
+      return await dataSources.userAPI.isUser({ fbAccountId })
     },
     updateUser: async (
       _,
       { adAccountId, apiKey, buildQueue, accessToken },
-      { dataSources }
+      { dataSources, context }
     ) => {
       const user =
         (await dataSources.userAPI.update({
@@ -84,10 +74,15 @@ module.exports = {
         })) || {}
 
       const { fbAccountId } = user
+      const isUser = await dataSources.userAPI.isUser({ fbAccountId })
+
+      // Retrieve the api key from the user, if it wasn't changed
+      apiKey = apiKey ? apiKey : user.apiKey
 
       return {
         success: !!user.id,
-        authToken: Buffer.from(`${fbAccountId},${apiKey}`).toString("base64")
+        authToken: Buffer.from(`${fbAccountId},${apiKey}`).toString("base64"),
+        isUser
       }
     }
   }

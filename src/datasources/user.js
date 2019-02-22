@@ -60,8 +60,24 @@ class UserAPI extends DataSource {
     return user
   }
 
+  async isUser({ fbAccountId } = {}) {
+    const user = (await this.userExists({ fbAccountId })) || {}
+    const ready = !!user && !!user.apiKey && !!user.adAccountId
+    const { apiKey, adAccountId, accessToken } = user
+    const settings = { adAccountId }
+    const tokenData = JSON.stringify({
+      apiKey,
+      fbAccountId,
+      adAccountId,
+      accessToken
+    })
+    const token = Buffer.from(tokenData).toString("base64")
+    return { exists: !!user.id, ready, token, settings }
+  }
+
   async update({ adAccountId, apiKey, buildQueue, accessToken } = {}) {
-    verifyAuth(this.context, 2)
+    this.context.apiKey = apiKey ? apiKey : this.context.apiKey
+    verifyAuth(this.context, 1)
 
     const { user, userModel } = this.context
 
@@ -74,7 +90,10 @@ class UserAPI extends DataSource {
       buildQueue
     })
 
-    return user
+    const { fbAccountId } = user
+    const updated = this.userExists({ fbAccountId })
+
+    return updated
   }
 }
 

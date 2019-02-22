@@ -16,8 +16,12 @@ const server = new ApolloServer({
       apiKey,
       user = null
 
-    // Extract API Key from request URI
+    // Extract Request Key from request URI
     let requestKey = req.originalUrl.substring(1)
+
+    if (!requestKey) {
+      throw new Error("Bad Request: Invalid request key.")
+    }
 
     // If this is a build request, set user from buildQueue
     if (requestKey === "build") {
@@ -28,6 +32,7 @@ const server = new ApolloServer({
         throw new Error("Bad Request: Build request failed - no user queued.")
       }
 
+      // Generate user auth token
       fbAccountId = user.fbAccountId
       apiKey = user.apiKey
       authToken = Buffer.from(`${fbAccountId},${apiKey}`).toString("base64")
@@ -52,16 +57,17 @@ const server = new ApolloServer({
         throw new Error("Bad Request: Missing Authorization")
       }
 
-      // // If no ad account ID, return null for user
+      // If no FB account ID, a new user needs to be created
+      // thus, we return here in order continue to the `authToken`
+      // resolver.
       if (!fbAccountId) return { user: null, apiKey, requestKey, authToken }
 
-      // Find a user by their ad account id
+      // Find a user by their FB account ID
       user = await store.users.findOne({ where: { fbAccountId } })
-      apiKey = user.apiKey ? user.apiKey : apiKey
-
       if (!user) {
         throw new Error("Bad Request: No user found.")
       }
+      apiKey = user.apiKey ? user.apiKey : apiKey
     }
 
     console.log("\nRequest Details", {

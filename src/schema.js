@@ -50,18 +50,27 @@ const User = gql`
   }
 `
 
-const IsUser = gql`
-  type IsUser {
-    exists: Boolean
-    isReady: Boolean
-    token: String
+const UserSettings = gql`
+  type UserSettings {
+    adAccountId: String
   }
 `
 
-const UdateUserResponse = gql`
-  type UdateUserResponse {
+const IsUser = gql`
+  ${UserSettings}
+  type IsUser {
+    exists: Boolean
+    ready: Boolean
+    token: String
+    settings: UserSettings
+  }
+`
+
+const UpdateUserResponse = gql`
+  type UpdateUserResponse {
     success: Boolean
     authToken: String
+    isUser: IsUser
   }
 `
 
@@ -72,7 +81,7 @@ const typeDefs = gql`
   ${AdAccountsResponse}
   ${User}
   ${IsUser}
-  ${UdateUserResponse}
+  ${UpdateUserResponse}
   type Query {
     fbaccountid(loginToken: String): Account
     adaccounts: AdAccountsResponse
@@ -88,7 +97,7 @@ const typeDefs = gql`
       apiKey: String
       accessToken: String
       buildQueue: Int
-    ): UdateUserResponse
+    ): UpdateUserResponse
   }
 `
 
