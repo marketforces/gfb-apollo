@@ -1,1 +1,1 @@
-web: forever ./src/index.js
+web: nodemon ./src/index.js localhost 4000
