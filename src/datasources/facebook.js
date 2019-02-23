@@ -71,7 +71,7 @@ class FacebookAPI extends RESTDataSource {
       : accessToken
     adAccountId = process.env.OVERRIDE_AD_ACCOUNT
       ? process.env.OVERRIDE_AD_ACCOUNT
-      : accessToken
+      : adAccountId
 
     const edge = "adcreatives"
     const query = qs.stringify({
