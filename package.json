@@ -4,6 +4,7 @@
   "dependencies": {
     "apollo-datasource-rest": "^0.3.0",
     "apollo-server": "2.1.0",
+    "nodemon": "^1.18.4",
     "forever": "^0.15.3",
     "graphql": "14.0.2",
     "mysql2": "^1.6.5",
