@@ -41,7 +41,7 @@ const createStore = () => {
  user ${process.env.DB_USERNAME.substring(0, 5)}******.`
       )
 
-      sequelize.sync({ force: true }).then(() => {
+      sequelize.sync({ force: false }).then(() => {
         // users.create({
         //   apiKey: Date.now(),
         //   adAccountId: "ADAccount123",

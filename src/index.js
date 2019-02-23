@@ -4,6 +4,7 @@ const typeDefs = require("./schema")
 const resolvers = require("./resolvers")
 const FacebookAPI = require("./datasources/facebook")
 const UserAPI = require("./datasources/user")
+const BuildAPI = require("./datasources/build")
 
 let isAuthenticated = require("./auth")
 const createStore = require("./util")
@@ -92,7 +93,8 @@ const server = new ApolloServer({
   resolvers,
   dataSources: () => ({
     facebookAPI: new FacebookAPI(),
-    userAPI: new UserAPI({ store })
+    userAPI: new UserAPI({ store }),
+    buildAPI: new BuildAPI()
   })
 })
 

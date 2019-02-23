@@ -83,6 +83,7 @@ const typeDefs = gql`
   ${IsUser}
   ${UpdateUserResponse}
   type Query {
+    triggerBuild: Boolean
     fbaccountid(loginToken: String): Account
     adaccounts: AdAccountsResponse
     adcreatives(limit: Int, after: String): AdCreativesResponse

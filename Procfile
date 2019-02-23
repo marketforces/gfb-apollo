@@ -1,0 +1,1 @@
+web: forever ./src/index.js

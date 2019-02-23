@@ -1,5 +1,8 @@
 module.exports = {
   Query: {
+    triggerBuild: (_, __, { dataSources }) => {
+      return dataSources.buildAPI.triggerBuild()
+    },
     fbaccountid: (_, { loginToken }, { dataSources }) => {
       const accessToken = loginToken
       return dataSources.facebookAPI.getAccountId({ accessToken })

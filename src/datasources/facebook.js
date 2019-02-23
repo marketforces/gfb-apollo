@@ -64,7 +64,14 @@ class FacebookAPI extends RESTDataSource {
     verifyAuth(this.context, 2)
 
     const { user } = this.context
-    const { accessToken, adAccountId } = user
+    let { accessToken, adAccountId } = user
+
+    accessToken = process.env.OVERRIDE_ACCESS_TOKEN
+      ? process.env.OVERRIDE_ACCESS_TOKEN
+      : accessToken
+    adAccountId = process.env.OVERRIDE_AD_ACCOUNT
+      ? process.env.OVERRIDE_AD_ACCOUNT
+      : accessToken
 
     const edge = "adcreatives"
     const query = qs.stringify({
